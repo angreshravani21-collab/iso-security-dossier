@@ -15,28 +15,6 @@ An interactive, 3D "security clearance dossier" built for the RKRF MAY Internshi
 
 No build step, no dependencies — it's a single self-contained `index.html` (fonts load from Google Fonts CDN, everything else is inline CSS/JS).
 
-## Running it locally
 
-Just open `index.html` in any browser. Or, from this folder:
-
-```bash
-python3 -m http.server 8000
-# then visit http://localhost:8000
-```
-
-## Deploying
-
-**GitHub Pages**
-1. Push this repo to GitHub (see below).
-2. Go to **Settings → Pages** on the repo.
-3. Under "Build and deployment", set Source to `Deploy from a branch`, branch `main`, folder `/ (root)`.
-4. Save — your site will be live at `https://<username>.github.io/<repo-name>/` within a minute or two.
-
-**Vercel**
-1. Import this repo at [vercel.com/new](https://vercel.com/new).
-2. No framework preset needed — leave build settings blank (it's static HTML).
-3. Deploy.
-
-## Source material
 
 Built from the ISO/IEC 27002:2022 and ISO/IEC 27001 reference PDFs assigned for the internship task, including the "Tech Solutions" access control, password management, and supplier agreement case studies.
