@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ISO 27001 / 27002 :: Security Clearance Dossier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-deep:#080b10;
+    --bg-panel:#10161d;
+    --bg-panel-2:#161d26;
+    --line:#232d38;
+    --cyan:#4cd3e0;
+    --cyan-dim:#2a7d86;
+    --amber:#e8a33d;
+    --rose:#e8637a;
+    --green:#4caf7d;
+    --ink:#e7ecf0;
+    --ink-dim:#8b98a5;
+    --ink-faint:#4d5964;
+    --org-c:#4cd3e0;
+    --ppl-c:#e8a33d;
+    --phy-c:#8fbf6e;
+    --tech-c:#e8637a;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    background:var(--bg-deep);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    overflow-x:hidden;
+    position:relative;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none !important; transition:none !important;}
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+
+  /* ---------- ambient bg ---------- */
+  .noise-grid{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(rgba(76,211,224,0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(76,211,224,0.035) 1px, transparent 1px);
+    background-size:44px 44px;
+    mask-image: radial-gradient(ellipse 90% 70% at 50% 20%, black 30%, transparent 85%);
+  }
+  .scanline{
+    position:fixed; left:0; right:0; height:2px; z-index:1; pointer-events:none;
+    background:linear-gradient(90deg, transparent, rgba(76,211,224,0.35), transparent);
+    animation:scan 7s linear infinite;
+  }
+  @keyframes scan{
+    0%{top:-2%;} 100%{top:102%;}
+  }
+
+  section{position:relative; z-index:2;}
+
+  /* ---------- nav ---------- */
+  nav{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 5vw;
+    background:rgba(8,11,16,0.75);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-id{display:flex; align-items:center; gap:10px; font-size:13px; letter-spacing:0.08em;}
+  .nav-dot{width:8px;height:8px;border-radius:50%;background:var(--green); box-shadow:0 0 8px var(--green); animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+  .nav-links{display:flex; gap:26px; font-size:12.5px; color:var(--ink-dim); letter-spacing:0.06em;}
+  .nav-links a{color:var(--ink-dim); text-decoration:none; transition:color .2s;}
+  .nav-links a:hover{color:var(--cyan);}
+  @media (max-width:720px){.nav-links{display:none;}}
+
+  /* ---------- hero ---------- */
+  .hero{
+    min-height:92vh;
+    display:grid;
+    grid-template-columns:1.1fr 0.9fr;
+    align-items:center;
+    gap:40px;
+    padding:60px 5vw 40px;
+  }
+  @media (max-width:900px){.hero{grid-template-columns:1fr; min-height:auto; padding-top:40px;}}
+
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:8px;
+    font-size:11.5px; letter-spacing:0.18em; text-transform:uppercase;
+    color:var(--cyan); border:1px solid var(--cyan-dim); border-radius:999px;
+    padding:6px 14px; background:rgba(76,211,224,0.06);
+  }
+  .hero h1{
+    font-family:'JetBrains Mono',monospace;
+    font-weight:800;
+    font-size:clamp(34px,5.4vw,64px);
+    line-height:1.04;
+    margin:20px 0 18px;
+    letter-spacing:-0.01em;
+  }
+  .hero h1 .accent{color:var(--cyan);}
+  .hero p.lead{
+    font-size:16.5px; line-height:1.7; color:var(--ink-dim); max-width:520px; margin-bottom:26px;
+  }
+  .terminal{
+    margin-top:10px;
+    background:var(--bg-panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:16px 18px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:12.5px;
+    color:var(--green);
+    min-height:118px;
+    max-width:520px;
+  }
+  .terminal .caret{display:inline-block; width:8px; background:var(--green); animation:blink 1s step-end infinite; margin-left:2px;}
+  @keyframes blink{50%{opacity:0;}}
+  .term-line{opacity:0; display:block;}
+  .term-line.show{opacity:1;}
+  .term-line .tag{color:var(--ink-faint);}
+  .term-line .ok{color:var(--green);}
+
+  /* ---------- 3D badge ---------- */
+  .badge-stage{
+    perspective:1300px;
+    display:flex; align-items:center; justify-content:center;
+    height:420px;
+  }
+  .badge{
+    width:290px; height:390px;
+    position:relative;
+    transform-style:preserve-3d;
+    transition:transform .12s ease-out;
+    cursor:grab;
+  }
+  .badge-face{
+    position:absolute; inset:0;
+    border-radius:20px;
+    background:linear-gradient(155deg,#161d26,#0d1218 70%);
+    border:1px solid var(--line);
+    box-shadow:0 30px 60px -20px rgba(0,0,0,0.7), 0 0 0 1px rgba(76,211,224,0.05) inset;
+    padding:24px;
+    display:flex; flex-direction:column;
+    transform:translateZ(20px);
+  }
+  .badge-strip{
+    position:absolute; top:0; left:0; right:0; height:44px;
+    background:repeating-linear-gradient(-45deg, var(--cyan-dim) 0 10px, #0d1218 10px 20px);
+    border-radius:20px 20px 0 0;
+    opacity:0.65;
+  }
+  .badge-top{display:flex; justify-content:space-between; align-items:center; margin-top:52px;}
+  .badge-top .lbl{font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.14em; color:var(--ink-faint);}
+  .badge-photo{
+    margin:18px auto 12px; width:104px; height:104px; border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, #2a7d86, #0d1218 75%);
+    border:2px solid var(--cyan-dim);
+    display:flex; align-items:center; justify-content:center;
+    transform:translateZ(30px);
+  }
+  .badge-photo svg{width:48px; height:48px; stroke:var(--cyan); fill:none;}
+  .badge-name{font-family:'JetBrains Mono',monospace; font-weight:700; font-size:15px; text-align:center; letter-spacing:0.02em;}
+  .badge-role{text-align:center; font-size:11.5px; color:var(--ink-dim); margin-top:4px;}
+  .badge-bars{display:flex; gap:5px; margin-top:18px; justify-content:center;}
+  .badge-bars span{height:26px; width:5px; background:var(--line); border-radius:2px;}
+  .badge-chip{
+    margin-top:auto; display:flex; justify-content:space-between; align-items:flex-end;
+    font-family:'JetBrains Mono',monospace; font-size:9.5px; color:var(--ink-faint);
+  }
+  .chip-square{width:30px; height:22px; border-radius:4px; background:linear-gradient(135deg,var(--amber),#7a5518); box-shadow:0 0 12px rgba(232,163,61,0.4);}
+  .badge-glow{
+    position:absolute; inset:-40px; z-index:-1; border-radius:40px;
+    background:radial-gradient(circle at 50% 40%, rgba(76,211,224,0.18), transparent 70%);
+    transform:translateZ(-10px);
+  }
+  .hint{text-align:center; font-size:11px; color:var(--ink-faint); margin-top:14px; letter-spacing:0.05em;}
+
+  /* ---------- section shell ---------- */
+  .wrap{padding:90px 5vw;}
+  .wrap.tight{padding-top:50px;}
+  .section-head{max-width:720px; margin-bottom:46px;}
+  .section-head .eyebrow{margin-bottom:16px;}
+  .section-head h2{
+    font-family:'JetBrains Mono',monospace; font-size:clamp(26px,3.4vw,40px); font-weight:800; line-height:1.15; margin:0 0 14px;
+  }
+  .section-head p{color:var(--ink-dim); font-size:15.5px; line-height:1.7; max-width:600px;}
+
+  /* ---------- stats ---------- */
+  .stats{
+    display:grid; grid-template-columns:repeat(4,1fr); gap:1px;
+    background:var(--line); border:1px solid var(--line); border-radius:16px; overflow:hidden;
+  }
+  @media (max-width:720px){.stats{grid-template-columns:repeat(2,1fr);}}
+  .stat{background:var(--bg-panel); padding:34px 24px; text-align:center;}
+  .stat .num{font-family:'JetBrains Mono',monospace; font-size:clamp(30px,4vw,46px); font-weight:800; color:var(--cyan);}
+  .stat .lbl{font-size:12.5px; color:var(--ink-dim); margin-top:8px; letter-spacing:0.03em;}
+
+  /* ---------- control deck ---------- */
+  .deck{
+    display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:20px;
+    perspective:1000px;
+  }
+  .ccard{
+    background:linear-gradient(160deg,var(--bg-panel-2),var(--bg-panel));
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:26px 22px;
+    cursor:pointer;
+    transform-style:preserve-3d;
+    transition:transform .15s ease-out, border-color .2s;
+    position:relative;
+  }
+  .ccard:hover{border-color:var(--cyan-dim);}
+  .ccard.active{border-color:var(--cyan); box-shadow:0 0 0 1px var(--cyan), 0 20px 40px -18px rgba(76,211,224,0.3);}
+  .ccard .cnum{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--cyan); letter-spacing:0.08em;}
+  .ccard .cname{font-size:17px; font-weight:700; margin:12px 0 10px; line-height:1.3;}
+  .ccard .cdesc{font-size:13px; color:var(--ink-dim); line-height:1.6;}
+  .ccard .expand-cue{
+    margin-top:16px; font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--ink-faint); letter-spacing:0.08em;
+    display:flex; align-items:center; gap:6px;
+  }
+  .ccard .expand-cue::after{content:'→'; transition:transform .2s;}
+  .ccard.active .expand-cue::after{transform:translateX(4px); color:var(--cyan);}
+
+  .detail-panel{
+    margin-top:26px; background:var(--bg-panel); border:1px solid var(--cyan-dim); border-radius:var(--radius);
+    padding:32px; display:none;
+  }
+  .detail-panel.show{display:block;}
+  .detail-panel h3{font-family:'JetBrains Mono',monospace; font-size:20px; margin:0 0 6px; color:var(--cyan);}
+  .detail-panel .dsub{color:var(--ink-dim); font-size:13px; margin-bottom:22px;}
+  .dgrid{display:grid; grid-template-columns:1.3fr 1fr; gap:28px;}
+  @media (max-width:800px){.dgrid{grid-template-columns:1fr;}}
+  .dgrid h4{font-size:12px; text-transform:uppercase; letter-spacing:0.1em; color:var(--ink-faint); margin:0 0 12px;}
+  .dgrid ul{margin:0; padding-left:18px; color:var(--ink); font-size:14px; line-height:1.85;}
+  .evidence-chips{display:flex; flex-wrap:wrap; gap:8px; margin-bottom:22px;}
+  .chip{
+    font-family:'JetBrains Mono',monospace; font-size:11px; padding:6px 12px; border-radius:999px;
+    background:rgba(76,211,224,0.08); border:1px solid var(--cyan-dim); color:var(--cyan);
+  }
+  .case-box{
+    background:var(--bg-panel-2); border-left:3px solid var(--amber); border-radius:8px; padding:16px 18px;
+    font-size:13px; color:var(--ink-dim); line-height:1.7; font-style:normal;
+  }
+  .case-box b{color:var(--amber); font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.06em; display:block; margin-bottom:6px;}
+
+  /* ---------- PDCA timeline ---------- */
+  .pdca{display:grid; grid-template-columns:repeat(4,1fr); gap:18px;}
+  @media (max-width:900px){.pdca{grid-template-columns:1fr;}}
+  .phase{
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:var(--radius); padding:20px;
+  }
+  .phase-head{display:flex; align-items:center; gap:10px; margin-bottom:14px;}
+  .phase-dot{width:10px;height:10px;border-radius:50%;}
+  .phase h4{font-family:'JetBrains Mono',monospace; font-size:14px; margin:0; letter-spacing:0.06em;}
+  .clause{
+    border-top:1px solid var(--line); padding:12px 0; cursor:pointer;
+  }
+  .clause:first-of-type{border-top:none;}
+  .clause .chead{display:flex; justify-content:space-between; align-items:center; font-size:13px;}
+  .clause .cq{font-family:'JetBrains Mono',monospace; color:var(--ink-faint); font-size:11px;}
+  .clause .cbody{max-height:0; overflow:hidden; transition:max-height .25s ease; font-size:12.5px; color:var(--ink-dim); line-height:1.6;}
+  .clause.open .cbody{max-height:120px; margin-top:8px;}
+  .clause .plus{color:var(--ink-faint); transition:transform .2s;}
+  .clause.open .plus{transform:rotate(45deg); color:var(--cyan);}
+
+  /* ---------- catalog ---------- */
+  .catalog-controls{display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-bottom:28px;}
+  .search-box{
+    flex:1; min-width:220px; background:var(--bg-panel); border:1px solid var(--line); border-radius:10px;
+    padding:12px 16px; display:flex; align-items:center; gap:10px;
+  }
+  .search-box input{
+    background:transparent; border:none; outline:none; color:var(--ink); font-family:'JetBrains Mono',monospace; font-size:13px; width:100%;
+  }
+  .search-box input::placeholder{color:var(--ink-faint);}
+  .tabs{display:flex; gap:8px; flex-wrap:wrap;}
+  .tab{
+    font-family:'JetBrains Mono',monospace; font-size:11.5px; padding:10px 16px; border-radius:999px;
+    border:1px solid var(--line); color:var(--ink-dim); cursor:pointer; background:var(--bg-panel); letter-spacing:0.03em;
+    transition:all .15s;
+  }
+  .tab.active{border-color:var(--cyan); color:var(--cyan); background:rgba(76,211,224,0.08);}
+  .tab:hover{border-color:var(--ink-faint);}
+  .catalog-grid{
+    display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:12px;
+  }
+  .item{
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:10px; padding:14px 16px;
+    border-left:3px solid var(--cat-color, var(--cyan));
+    font-size:13px; transition:transform .12s, border-color .12s;
+  }
+  .item:hover{transform:translateY(-2px); border-color:var(--ink-faint);}
+  .item .inum{font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--cat-color, var(--cyan)); display:block; margin-bottom:4px;}
+  .item.hide{display:none;}
+  .count-line{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--ink-faint); margin-bottom:18px;}
+
+  /* ---------- case study dossier ---------- */
+  .dossier{
+    background:var(--bg-panel); border:1px solid var(--line); border-radius:var(--radius); padding:36px;
+    position:relative; overflow:hidden;
+  }
+  .stamp{
+    position:absolute; top:26px; right:34px; transform:rotate(8deg);
+    border:3px solid var(--rose); color:var(--rose); font-family:'JetBrains Mono',monospace;
+    font-weight:800; font-size:13px; letter-spacing:0.15em; padding:6px 14px; border-radius:6px; opacity:0.85;
+  }
+  .dossier-grid{display:grid; grid-template-columns:1fr 1fr; gap:32px; margin-top:20px;}
+  @media (max-width:800px){.dossier-grid{grid-template-columns:1fr;}}
+  .mini-table{width:100%; border-collapse:collapse; font-size:12.5px;}
+  .mini-table th, .mini-table td{padding:9px 10px; border-bottom:1px solid var(--line); text-align:left;}
+  .mini-table th{color:var(--ink-faint); font-family:'JetBrains Mono',monospace; font-weight:500; font-size:11px; text-transform:uppercase;}
+  .pill{font-size:11px; padding:3px 9px; border-radius:999px; background:rgba(76,175,125,0.12); color:var(--green); font-family:'JetBrains Mono',monospace;}
+  .pill.warn{background:rgba(232,163,61,0.12); color:var(--amber);}
+
+  /* ---------- footer ---------- */
+  footer{
+    padding:70px 5vw 50px; border-top:1px solid var(--line); text-align:center;
+  }
+  footer .fmono{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--ink-faint); letter-spacing:0.06em;}
+  footer h3{font-family:'JetBrains Mono',monospace; font-size:22px; margin:14px 0; color:var(--cyan);}
+
+  .reveal{opacity:0; transform:translateY(24px); transition:opacity .6s ease, transform .6s ease;}
+  .reveal.in{opacity:1; transform:translateY(0);}
+</style>
+</head>
+<body>
+
+<div class="noise-grid"></div>
+<div class="scanline"></div>
+
+<nav>
+  <div class="nav-id mono"><span class="nav-dot"></span> RKRF-INTERNSHIP // ISMS-DOSSIER-2027</div>
+  <div class="nav-links">
+    <a href="#deck">Core Controls</a>
+    <a href="#pdca">ISO 27001 Cycle</a>
+    <a href="#catalog">Full Catalog</a>
+    <a href="#dossier">Case File</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div>
+    <span class="eyebrow mono">◆ Clearance Level: Analyst</span>
+    <h1>Access, Identity<br>& <span class="accent">Supplier Security</span><br>— Decoded.</h1>
+    <p class="lead">A working dossier on ISO/IEC 27002:2022 clauses 5.16–5.20 and the ISO/IEC 27001 management system that wraps around them — built from the assigned reference material, for the RKRF MAY Internship team.</p>
+    <div class="terminal" id="terminal"></div>
+  </div>
+
+  <div class="badge-stage" id="stage">
+    <div class="badge-glow"></div>
+    <div class="badge" id="badge">
+      <div class="badge-face">
+        <div class="badge-strip"></div>
+        <div class="badge-top">
+          <span class="lbl mono">ISMS-ISP-001</span>
+          <span class="lbl mono">v1.0</span>
+        </div>
+        <div class="badge-photo">
+          <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" stroke-width="1.5"/><path d="M4 20c0-4.4 3.6-7 8-7s8 2.6 8 7" stroke-width="1.5"/></svg>
+        </div>
+        <div class="badge-name">ACCESS CONTROL</div>
+        <div class="badge-role mono">CLAUSES 5.16 → 5.20</div>
+        <div class="badge-bars">
+          <span style="height:18px"></span><span style="height:28px;background:var(--cyan-dim)"></span><span style="height:14px"></span><span style="height:24px;background:var(--cyan-dim)"></span><span style="height:20px"></span><span style="height:30px;background:var(--cyan-dim)"></span><span style="height:16px"></span>
+        </div>
+        <div class="badge-chip">
+          <span>ISO/IEC 27002:2022</span>
+          <div class="chip-square"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap tight reveal">
+  <div class="stats">
+    <div class="stat"><div class="num" data-target="5">0</div><div class="lbl">Core clauses decoded<br>(5.16 – 5.20)</div></div>
+    <div class="stat"><div class="num" data-target="93">0</div><div class="lbl">Total ISO 27002<br>controls catalogued</div></div>
+    <div class="stat"><div class="num" data-target="10">0</div><div class="lbl">ISO 27001 clauses<br>in the PDCA cycle</div></div>
+    <div class="stat"><div class="num" data-target="24">0</div><div class="lbl">Hour incident<br>notification window</div></div>
+  </div>
+</div>
+
+<section class="wrap reveal" id="deck">
+  <div class="section-head">
+    <span class="eyebrow mono">◆ 01 / Control Deck</span>
+    <h2>The five clauses on the task list</h2>
+    <p>Identity, credentials, access rights, and the suppliers who touch all three. Tilt a card, then click it open for the evidence auditors actually ask for.</p>
+  </div>
+
+  <div class="deck" id="deckGrid"></div>
+  <div class="detail-panel" id="detailPanel"></div>
+</section>
+
+<section class="wrap reveal" id="pdca">
+  <div class="section-head">
+    <span class="eyebrow mono">◆ 02 / ISO 27001 Backbone</span>
+    <h2>Plan → Do → Check → Act</h2>
+    <p>Every 27002 control lives inside this management cycle. Click a clause to see what it actually asks the organization to do.</p>
+  </div>
+  <div class="pdca" id="pdcaGrid"></div>
+</section>
+
+<section class="wrap reveal" id="catalog">
+  <div class="section-head">
+    <span class="eyebrow mono">◆ 03 / Full Control Catalog</span>
+    <h2>All 93 controls, four families</h2>
+    <p>Organizational, People, Physical, Technological — the complete ISO/IEC 27002:2022 set. Search or filter to find any control by number or name.</p>
+  </div>
+  <div class="catalog-controls">
+    <div class="search-box mono">
+      <span>⌕</span>
+      <input id="searchInput" type="text" placeholder="search controls... e.g. cryptography, malware, 8.7">
+    </div>
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-cat="all">All (93)</div>
+      <div class="tab" data-cat="org">Organizational (37)</div>
+      <div class="tab" data-cat="ppl">People (8)</div>
+      <div class="tab" data-cat="phy">Physical (14)</div>
+      <div class="tab" data-cat="tech">Technological (34)</div>
+    </div>
+  </div>
+  <div class="count-line mono" id="countLine">showing 93 of 93 controls</div>
+  <div class="catalog-grid" id="catalogGrid"></div>
+</section>
+
+<section class="wrap reveal" id="dossier">
+  <div class="section-head">
+    <span class="eyebrow mono">◆ 04 / Case File</span>
+    <h2>Tech Solutions × CloudSecure</h2>
+    <p>How clauses 5.16–5.20 play out in a real (fictional) supplier relationship, straight from the reference documentation.</p>
+  </div>
+  <div class="dossier">
+    <div class="stamp mono">CONFIDENTIAL</div>
+    <div class="mono" style="font-size:12px; color:var(--ink-faint); letter-spacing:0.06em;">CODE: ISMS-ISP-001 · REVIEWER: CISO · APPROVER: CIO</div>
+    <div class="dossier-grid">
+      <div>
+        <h4 class="mono" style="font-size:12px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:14px;">Password &amp; Access Rules</h4>
+        <table class="mini-table">
+          <tr><th>Rule</th><th>User Account</th><th>Privileged</th></tr>
+          <tr><td>Min. length</td><td>12 chars</td><td>16 chars</td></tr>
+          <tr><td>Password history</td><td>last 3</td><td>last 24</td></tr>
+          <tr><td>Max. lifespan</td><td>90 days</td><td>42 days</td></tr>
+          <tr><td>Min. lifespan</td><td>2 days</td><td>1 day</td></tr>
+        </table>
+      </div>
+      <div>
+        <h4 class="mono" style="font-size:12px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:0.08em; margin-bottom:14px;">CloudSecure Compliance Snapshot</h4>
+        <table class="mini-table">
+          <tr><th>Requirement</th><th>Status</th></tr>
+          <tr><td>ISO 27001 certified, on-site audit</td><td><span class="pill">Compliant</span></td></tr>
+          <tr><td>AES-256 encryption at rest &amp; transit</td><td><span class="pill">Compliant</span></td></tr>
+          <tr><td>24h incident notification window</td><td><span class="pill">Compliant</span></td></tr>
+          <tr><td>Quarterly access-rights review</td><td><span class="pill warn">Due Q3</span></td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="fmono">SECURITY OPERATIONS · RKRF RESEARCH FOUNDATION</div>
+  <h3>// end of transmission</h3>
+  <div class="fmono">Compiled from ISO/IEC 27002:2022 &amp; ISO/IEC 27001 reference material for the MAY internship task.</div>
+</footer>
+
+<script>
+/* ---------- terminal boot sequence ---------- */
+const bootLines = [
+  {tag:'[boot]', text:'loading control 5.16 — identity management', ok:'OK'},
+  {tag:'[boot]', text:'loading control 5.17 — authentication information', ok:'OK'},
+  {tag:'[boot]', text:'loading control 5.18 — access rights', ok:'OK'},
+  {tag:'[boot]', text:'loading control 5.19 — supplier relationships', ok:'OK'},
+  {tag:'[boot]', text:'loading control 5.20 — supplier agreements', ok:'OK'},
+  {tag:'[status]', text:'clearance verified. dossier unlocked.', ok:''},
+];
+const term = document.getElementById('terminal');
+let li = 0;
+function typeBoot(){
+  if(li >= bootLines.length){ return; }
+  const l = bootLines[li];
+  const div = document.createElement('div');
+  div.className = 'term-line';
+  div.innerHTML = `<span class="tag">${l.tag}</span> ${l.text} ${l.ok ? '<span class="ok">['+l.ok+']</span>':''}`;
+  term.appendChild(div);
+  requestAnimationFrame(()=> div.classList.add('show'));
+  li++;
+  setTimeout(typeBoot, 480);
+}
+typeBoot();
+
+/* ---------- 3D badge tilt ---------- */
+const stage = document.getElementById('stage');
+const badge = document.getElementById('badge');
+const coarse = window.matchMedia('(pointer:coarse)').matches;
+if(!coarse){
+  stage.addEventListener('mousemove', (e)=>{
+    const r = stage.getBoundingClientRect();
+    const x = (e.clientX - r.left)/r.width - 0.5;
+    const y = (e.clientY - r.top)/r.height - 0.5;
+    badge.style.transform = `rotateY(${x*36}deg) rotateX(${-y*36}deg)`;
+  });
+  stage.addEventListener('mouseleave', ()=>{
+    badge.style.transform = 'rotateY(0deg) rotateX(0deg)';
+  });
+}
+
+/* ---------- counters ---------- */
+const counters = document.querySelectorAll('.num');
+const counterObs = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      const el = entry.target;
+      const target = parseInt(el.dataset.target,10);
+      let cur = 0;
+      const step = Math.max(1, Math.round(target/40));
+      const iv = setInterval(()=>{
+        cur += step;
+        if(cur >= target){ cur = target; clearInterval(iv); }
+        el.textContent = cur;
+      }, 25);
+      counterObs.unobserve(el);
+    }
+  });
+},{threshold:0.4});
+counters.forEach(c=>counterObs.observe(c));
+
+/* ---------- reveal on scroll ---------- */
+const revealObs = new IntersectionObserver((entries)=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){ entry.target.classList.add('in'); revealObs.unobserve(entry.target); }
+  });
+},{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>revealObs.observe(el));
+
+/* ---------- control deck data ---------- */
+const controls = [
+  {
+    num:'5.16', name:'Identity Management', short:'Every person, device, and bot gets one traceable identity — and it dies the moment it should.',
+    points:[
+      'Each person gets a unique identity tied to their employee ID — no anonymous access.',
+      'Shared identities (e.g. a support team login) need documented approval and a listed purpose.',
+      'Non-human identities — service accounts, bots, API keys — go through separate approval and get rotated regularly.',
+      'Leavers or role-changers are disabled within a strict window, never left dangling.',
+      'One entity, one identity, per domain — no duplicates.',
+      'Every identity event (create, disable, permission change) is logged for at least 12 months.'
+    ],
+    evidence:['IAM system logs','Access management procedure','Quarterly duplicate audits'],
+    caseTitle:'TECH SOLUTIONS — ACCESS CONTROL POLICY',
+    caseBody:'Accounts are created in Okta/Active Directory during onboarding by HR + InfoSec. Developer access to code repos is fully attributable — when someone leaves, their account is disabled and data-center access revoked within 48 hours.'
+  },
+  {
+    num:'5.17', name:'Authentication Information', short:'Passwords are treated like classified material — from birth to rotation to death.',
+    points:[
+      'Temporary passwords are random, unique per user, and must change on first login.',
+      'Identity is verified before any password reset or reissue — no just handing it over.',
+      'Passwords travel through encrypted channels only, never plain-text email.',
+      'Default vendor passwords ("admin", "password") are changed the moment a system is installed.',
+      'Users never share personal passwords; shared-account passwords go only to approved people.',
+      'Strong password rules apply: 12+ chars, no personal info, no dictionary words, no reuse.'
+    ],
+    evidence:['Password vault records','Signed confidentiality commitments','Acknowledgment-of-receipt logs'],
+    caseTitle:'TECH SOLUTIONS — PASSWORD POLICY',
+    caseBody:'User accounts: 12-char minimum, 90-day max lifespan, last 3 passwords blocked from reuse. Privileged/admin accounts: 16-char minimum, 42-day max lifespan, last 24 passwords blocked. All entries masked as dots on screen.'
+  },
+  {
+    num:'5.18', name:'Access Rights', short:'Access is granted on a strict need-basis, approved by someone other than who sets it up.',
+    points:[
+      'Access requires sign-off from the asset owner — least privilege by default.',
+      'The approver and the implementer are always different people (segregation of duties).',
+      'Temporary workers get access with a hard expiry date, never indefinite.',
+      'A central access-rights matrix tracks exactly who can touch what.',
+      'Role changes trigger an automatic review — old permissions don\'t linger.',
+      'Termination triggers immediate revocation — badges, passwords, keycards, all of it.'
+    ],
+    evidence:['Access control policy','Access rights matrix','Access change logs'],
+    caseTitle:'TECH SOLUTIONS — ACCESS RIGHTS MATRIX',
+    caseBody:'A role-based matrix maps every asset (CRM, HR database, code repos, finance systems) against every role (Employee, Developer, IT Admin, HR, Finance, Manager). Access is revoked within 24 hours of termination or role change.'
+  },
+  {
+    num:'5.19', name:'Supplier Relationships', short:'Every vendor that can touch your data is scored, monitored, and has an exit plan.',
+    points:[
+      'A documented policy sets the rules for working securely with any supplier.',
+      'Suppliers are typed and mapped: ICT, logistics, utilities, financial services, cloud.',
+      'Each supplier\'s own security controls are reviewed before and during the relationship.',
+      'The organization defines exactly what a supplier can access, monitor, or control.',
+      'Non-compliance triggers a defined escalation path — fix it, or the contract ends.',
+      'Alternate suppliers are pre-identified so one vendor failing doesn\'t stall the business.'
+    ],
+    evidence:['Supplier security policy','List of supplier types & risk ratings','Risk analysis reports'],
+    caseTitle:'TECH SOLUTIONS × CLOUDSECURE',
+    caseBody:'CloudSecure hosts Tech Solutions\' customer database via a secure API (OAuth 2.0, TLS 1.3). Annual SOC 2 Type II report and ISO 27001 certification are required before onboarding, and reviewed every year after.'
+  },
+  {
+    num:'5.20', name:'Supplier Agreements', short:'Every security promise a supplier makes gets written into the contract — in writing, not in trust.',
+    points:[
+      'Agreements spell out exactly what data the supplier can access and how.',
+      'Legal & regulatory clauses are baked in: GDPR, IP rights, breach notification.',
+      'Security controls are contractual — RBAC, encryption standards, audit rights.',
+      'Incident management terms define who does what within a fixed notification window.',
+      'Backup, disaster recovery, and change-notification terms protect availability.',
+      'Termination clauses force secure data return or destruction — with proof.'
+    ],
+    evidence:['Signed supplier agreement w/ security clauses','SOC 2 / ISO certifications on file','Termination & data-destruction certificates'],
+    caseTitle:'CLOUDSECURE AGREEMENT — KEY CLAUSES',
+    caseBody:'"CloudSecure will notify Tech Solutions within 24 hours of detecting a security incident... will use NIST 800-88-compliant methods to wipe data when no longer needed... will provide 30 days\' notice before software updates."'
+  }
+];
+
+const deckGrid = document.getElementById('deckGrid');
+const detailPanel = document.getElementById('detailPanel');
+
+controls.forEach((c, idx)=>{
+  const card = document.createElement('div');
+  card.className = 'ccard';
+  card.dataset.idx = idx;
+  card.innerHTML = `
+    <div class="cnum mono">CLAUSE ${c.num}</div>
+    <div class="cname">${c.name}</div>
+    <div class="cdesc">${c.short}</div>
+    <div class="expand-cue mono">view evidence</div>
+  `;
+  if(!coarse){
+    card.addEventListener('mousemove',(e)=>{
+      const r = card.getBoundingClientRect();
+      const x = (e.clientX-r.left)/r.width - 0.5;
+      const y = (e.clientY-r.top)/r.height - 0.5;
+      card.style.transform = `rotateY(${x*14}deg) rotateX(${-y*14}deg) translateY(-4px)`;
+    });
+    card.addEventListener('mouseleave',()=>{ card.style.transform = ''; });
+  }
+  card.addEventListener('click', ()=> openDetail(idx));
+  deckGrid.appendChild(card);
+});
+
+function openDetail(idx){
+  document.querySelectorAll('.ccard').forEach(c=>c.classList.remove('active'));
+  const cards = document.querySelectorAll('.ccard');
+  cards[idx].classList.add('active');
+  const c = controls[idx];
+  detailPanel.innerHTML = `
+    <h3>${c.num} — ${c.name}</h3>
+    <div class="dsub">${c.short}</div>
+    <div class="dgrid">
+      <div>
+        <h4>What the control requires</h4>
+        <ul>${c.points.map(p=>`<li>${p}</li>`).join('')}</ul>
+      </div>
+      <div>
+        <h4>Evidence auditors ask for</h4>
+        <div class="evidence-chips">${c.evidence.map(e=>`<span class="chip">${e}</span>`).join('')}</div>
+        <div class="case-box"><b>${c.caseTitle}</b>${c.caseBody}</div>
+      </div>
+    </div>
+  `;
+  detailPanel.classList.add('show');
+  detailPanel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+openDetail(0);
+
+/* ---------- PDCA ---------- */
+const pdca = [
+  {phase:'PLAN', color:'var(--cyan)', clauses:[
+    {n:'4.1–4.4', t:'Context & Scope', d:'Map internal/external factors, stakeholders, and draw the boundary of what the ISMS actually covers.'},
+    {n:'5.1–5.3', t:'Leadership', d:'Top management sets the policy, assigns roles, and commits resources.'},
+    {n:'6.1–6.3', t:'Risk & Objectives', d:'Assess risks, treat them via Annex A controls, and set measurable security objectives.'},
+  ]},
+  {phase:'DO', color:'var(--amber)', clauses:[
+    {n:'7.1–7.5', t:'Support', d:'Resources, competence, awareness, communication, and controlled documentation.'},
+    {n:'8.1', t:'Operational Control', d:'Run the processes and controls that were planned in Clause 6.'},
+    {n:'8.2–8.3', t:'Risk Execution', d:'Re-assess risk when things change, and execute the risk treatment plan.'},
+  ]},
+  {phase:'CHECK', color:'var(--phy-c)', clauses:[
+    {n:'9.1', t:'Monitoring', d:'Decide what gets measured, how, and by whom — with reproducible results.'},
+    {n:'9.2', t:'Internal Audit', d:'Planned, objective audits confirm the ISMS is actually being followed.'},
+    {n:'9.3', t:'Management Review', d:'Top management reviews suitability, adequacy, and effectiveness at intervals.'},
+  ]},
+  {phase:'ACT', color:'var(--rose)', clauses:[
+    {n:'10.1', t:'Continual Improvement', d:'Ongoing commitment to making the ISMS better — not a one-time project.'},
+    {n:'10.2', t:'Nonconformity & Correction', d:'When something breaks, control it, fix the root cause, and verify it stays fixed.'},
+  ]},
+];
+const pdcaGrid = document.getElementById('pdcaGrid');
+pdca.forEach(phase=>{
+  const div = document.createElement('div');
+  div.className = 'phase';
+  div.innerHTML = `<div class="phase-head"><span class="phase-dot" style="background:${phase.color}"></span><h4>${phase.phase}</h4></div>` +
+    phase.clauses.map(cl=>`
+      <div class="clause">
+        <div class="chead"><span>${cl.t}</span><span class="cq mono">${cl.n} <span class="plus">+</span></span></div>
+        <div class="cbody">${cl.d}</div>
+      </div>
+    `).join('');
+  pdcaGrid.appendChild(div);
+});
+pdcaGrid.addEventListener('click',(e)=>{
+  const cl = e.target.closest('.clause');
+  if(cl) cl.classList.toggle('open');
+});
+
+/* ---------- full catalog ---------- */
+const orgNames = ["Policies for Information Security","Information Security Roles and Responsibilities","Segregation of Duties","Management Responsibilities","Contact with Authorities","Contact with Special Interest Groups","Threat Intelligence","Information Security in Project Management","Inventory of Information and Other Associated Assets","Acceptable Use of Information and Other Associated Assets","Return of Assets","Classification of Information","Labelling of Information","Information Transfer","Access Control","Identity Management","Authentication Information","Access Rights","Information Security in Supplier Relationships","Addressing Information Security in Supplier Agreements","Managing Information Security in the ICT Supply Chain","Monitoring, Review & Change Management of Supplier Services","Information Security for Use of Cloud Services","Incident Management Planning and Preparation","Assessment and Decision on Security Events","Response to Information Security Incidents","Learning from Security Incidents","Collection of Evidence","Information Security During Disruption","ICT Readiness for Business Continuity","Legal, Statutory, Regulatory & Contractual Requirements","Intellectual Property Rights","Protection of Records","Privacy and Protection of PII","Independent Review of Information Security","Compliance with Policies, Rules & Standards","Documented Operating Procedures"];
+const pplNames = ["Screening","Terms and Conditions of Employment","Information Security Awareness, Education & Training","Disciplinary Process","Responsibilities After Termination or Change of Employment","Confidentiality or Non-Disclosure Agreements","Remote Working","Information Security Event Reporting"];
+const phyNames = ["Physical Security Perimeters","Physical Entry","Securing Offices, Rooms & Facilities","Physical Security Monitoring","Protecting Against Physical & Environmental Threats","Working in Secure Areas","Clear Desk and Clear Screen","Equipment Siting and Protection","Security of Assets Off-Premises","Storage Media","Supporting Utilities","Cabling Security","Equipment Maintenance","Secure Disposal or Re-Use of Equipment"];
+const techNames = ["User Endpoint Devices","Privileged Access Rights","Information Access Restriction","Access to Source Code","Secure Authentication","Capacity Management","Protection Against Malware","Management of Technical Vulnerabilities","Configuration Management","Information Deletion","Data Masking","Data Leakage Prevention","Information Backup","Redundancy of Information Processing Facilities","Logging","Monitoring Activities","Clock Synchronization","Use of Privileged Utility Programs","Installation of Software on Operational Systems","Network Security","Security of Network Services","Segregation of Networks","Web Filtering","Use of Cryptography","Secure Development Life Cycle","Application Security Requirements","Secure System Architecture & Engineering Principles","Secure Coding","Security Testing in Development and Acceptance","Outsourced Development","Separation of Dev, Test & Production Environments","Change Management","Test Information","Protection of Info Systems During Audit Testing"];
+
+function buildCatalog(names, prefix, cat){
+  return names.map((n,i)=>({num:`${prefix}.${i+1}`, name:n, cat}));
+}
+const catalogData = [
+  ...buildCatalog(orgNames,'5','org'),
+  ...buildCatalog(pplNames,'6','ppl'),
+  ...buildCatalog(phyNames,'7','phy'),
+  ...buildCatalog(techNames,'8','tech'),
+];
+const catColors = {org:'var(--org-c)', ppl:'var(--ppl-c)', phy:'var(--phy-c)', tech:'var(--tech-c)'};
+const catalogGrid = document.getElementById('catalogGrid');
+const countLine = document.getElementById('countLine');
+
+function renderCatalog(){
+  catalogGrid.innerHTML = catalogData.map(item=>`
+    <div class="item" data-cat="${item.cat}" data-search="${(item.num+' '+item.name).toLowerCase()}" style="--cat-color:${catColors[item.cat]}">
+      <span class="inum mono">${item.num}</span>${item.name}
+    </div>
+  `).join('');
+}
+renderCatalog();
+
+let activeCat = 'all';
+const tabs = document.getElementById('tabs');
+tabs.addEventListener('click',(e)=>{
+  const t = e.target.closest('.tab');
+  if(!t) return;
+  tabs.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  activeCat = t.dataset.cat;
+  filterCatalog();
+});
+document.getElementById('searchInput').addEventListener('input', filterCatalog);
+
+function filterCatalog(){
+  const q = document.getElementById('searchInput').value.toLowerCase().trim();
+  let shown = 0;
+  document.querySelectorAll('.item').forEach(el=>{
+    const matchCat = activeCat === 'all' || el.dataset.cat === activeCat;
+    const matchSearch = q === '' || el.dataset.search.includes(q);
+    const visible = matchCat && matchSearch;
+    el.classList.toggle('hide', !visible);
+    if(visible) shown++;
+  });
+  countLine.textContent = `showing ${shown} of ${catalogData.length} controls`;
+}
+</script>
+</body>
+</html>
